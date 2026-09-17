@@ -1,5 +1,10 @@
 export { Formatter } from "./formatter.js"
-export { configureFormatter, formatter } from "./global.js"
+export {
+	configureFormatter,
+	formatDate,
+	formatPercent,
+	formatter,
+} from "./global.js"
 export type { LocaleSpellout, NumberShortConfig } from "./locales/index.js"
 export {
 	getNumberShortConfig,
@@ -25,4 +30,4 @@ export type {
 	UnitType,
 	UrlOptions,
 } from "./types.js"
-export { escapeHtml, normalizeDate, normalizeNumber } from "./utils.js"
+export { escapeHtml, normalizeDate, normalizeNumber, parseDate } from "./utils.js"

@@ -1,5 +1,6 @@
 import { Formatter } from "./formatter.js"
 import type { FormatterOptions } from "./types.js"
+import { parseDate } from "./utils.js"
 
 /**
  * Global singleton Formatter instance.
@@ -32,4 +33,46 @@ export const formatter = new Proxy({} as Formatter, {
  */
 export function configureFormatter(options: FormatterOptions): void {
 	instance = new Formatter(options)
+}
+
+/**
+ * Format a date value safely for display using the global formatter.
+ * Returns `fallback` (default: "\u2014") for null, undefined, empty, or invalid dates.
+ * Handles timezone-naive ISO strings by treating them as UTC.
+ */
+export function formatDate(
+	date: string | Date | null | undefined,
+	fallback = "\u2014",
+): string {
+	if (!date) return fallback
+	try {
+		const d = parseDate(date)
+		if (Number.isNaN(d.getTime())) return fallback
+		return formatter.asDate(d)
+	} catch {
+		return fallback
+	}
+}
+
+/**
+ * Format a value as a percentage for display using the global formatter.
+ * - If the string already contains "%", returns it as-is.
+ * - Values between 0 and 1 (exclusive) are treated as ratios (multiplied by 100).
+ * - Returns `fallback` (default: "\u2014") for null/undefined/unparseable values.
+ */
+export function formatPercent(
+	value: number | string | null | undefined,
+	fallback = "\u2014",
+): string {
+	if (value === null || value === undefined) return fallback
+	if (typeof value === "string") {
+		if (value.trim() === "") return fallback
+		if (value.includes("%")) return value
+		const num = Number(value)
+		if (Number.isNaN(num)) return value || fallback
+		const pct = num > 0 && num <= 1 ? num * 100 : num
+		return `${formatter.asDecimal(pct, 2)}%`
+	}
+	const pct = value > 0 && value <= 1 ? value * 100 : value
+	return `${formatter.asDecimal(pct, 2)}%`
 }

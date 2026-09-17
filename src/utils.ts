@@ -37,6 +37,25 @@ export function normalizeDate(value: unknown): Date {
 }
 
 /**
+ * Parse a date string safely, treating timezone-naive ISO strings as UTC.
+ * Strings like "2024-03-15T14:30:00" (no Z, no +offset) get "Z" appended
+ * to ensure consistent UTC interpretation across environments.
+ * Returns an Invalid Date (NaN) for null, undefined, or empty values
+ * instead of throwing - suitable for display pipelines.
+ */
+export function parseDate(
+	date: string | Date | null | undefined,
+): Date {
+	if (!date) return new Date(Number.NaN)
+	if (date instanceof Date) return date
+	let str = date
+	if (typeof str === "string" && !str.endsWith("Z") && !str.includes("+") && str.includes("T")) {
+		str += "Z"
+	}
+	return new Date(str)
+}
+
+/**
  * Normalize an input value into a number.
  * Accepts: number, numeric string (with optional comma grouping), boolean.
  */
