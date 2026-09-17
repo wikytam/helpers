@@ -20,7 +20,7 @@ import { parseDate } from "./utils.js"
 let instance = new Formatter()
 
 /** The global Formatter singleton. Ready to use after `configureFormatter()`. */
-export const formatter = new Proxy({} as Formatter, {
+export const formatter: Formatter = new Proxy({} as Formatter, {
 	get(_target, prop, receiver) {
 		return Reflect.get(instance, prop, receiver)
 	},
