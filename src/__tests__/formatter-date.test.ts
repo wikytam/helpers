@@ -62,6 +62,14 @@ describe("Formatter - Ngày tháng & Thời gian", () => {
 		it("null returns nullDisplay", () => {
 			expect(f.asDate(null)).toBe("(not set)")
 		})
+
+		it("empty string returns nullDisplay", () => {
+			expect(f.asDate("")).toBe("(not set)")
+		})
+
+		it("whitespace-only string returns nullDisplay", () => {
+			expect(f.asDate("  ")).toBe("(not set)")
+		})
 	})
 
 	describe("asTime", () => {
@@ -137,6 +145,10 @@ describe("Formatter - Ngày tháng & Thời gian", () => {
 
 		it("null trả về nullDisplay", () => {
 			expect(f.asRelativeTime(null)).toBe("(not set)")
+		})
+
+		it("empty string returns nullDisplay", () => {
+			expect(f.asRelativeTime("")).toBe("(not set)")
 		})
 	})
 

@@ -22,6 +22,18 @@ import {
 	resolveDateFormat,
 } from "./utils.js"
 
+/** Returns true for null or undefined only. */
+function isNullish(value: unknown): value is null | undefined {
+	return value === null || value === undefined
+}
+
+/** Returns true for null, undefined, or empty/whitespace-only strings. */
+function isBlank(value: unknown): value is null | undefined {
+	if (value === null || value === undefined) return true
+	if (typeof value === "string" && value.trim() === "") return true
+	return false
+}
+
 /**
  * TypeScript port of yii\i18n\Formatter.
  *
@@ -71,7 +83,7 @@ export class Formatter {
 	 * Supports both string and tuple `[formatName, ...params]` signatures.
 	 */
 	public format(value: unknown, type: string | [string, ...unknown[]]): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isNullish(value)) return this.nullDisplay
 
 		const formatName = Array.isArray(type) ? type[0] : type
 		const params = Array.isArray(type) ? type.slice(1) : []
@@ -93,13 +105,13 @@ export class Formatter {
 
 	/** Returns the value as-is without any formatting. */
 	public asRaw(value: unknown): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isNullish(value)) return this.nullDisplay
 		return String(value)
 	}
 
 	/** Formats the value as HTML-encoded plain text. */
 	public asText(value: unknown): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isNullish(value)) return this.nullDisplay
 		return escapeHtml(String(value))
 	}
 
@@ -109,7 +121,7 @@ export class Formatter {
 	 * Consecutive newlines produce multiple `<br />` tags.
 	 */
 	public asNtext(value: unknown): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isNullish(value)) return this.nullDisplay
 		const escaped = escapeHtml(String(value))
 		return escaped.replace(/\r\n/g, "<br />").replace(/[\r\n]/g, "<br />")
 	}
@@ -119,7 +131,7 @@ export class Formatter {
 	 * Supports configurable wrapper tag and inline line-break conversion.
 	 */
 	public asParagraphs(value: unknown, options?: ParagraphOptions): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isNullish(value)) return this.nullDisplay
 		const tag = options?.tag ?? "p"
 		const lineBreaks = options?.lineBreaks ?? false
 		const text = String(value)
@@ -144,7 +156,7 @@ export class Formatter {
 	 * Without config, the value is returned as-is (caller is responsible for safety).
 	 */
 	public asHtml(value: unknown, sanitize?: HtmlSanitizeConfig): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isNullish(value)) return this.nullDisplay
 		const html = String(value)
 		if (!sanitize) return html
 		return Formatter.sanitizeHtml(html, sanitize)
@@ -210,7 +222,7 @@ export class Formatter {
 	 * Validates email format - returns escaped plain text for invalid emails.
 	 */
 	public asEmail(value: unknown, options?: EmailOptions): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const email = String(value)
 
 		if (!Formatter.isValidEmail(email)) {
@@ -238,7 +250,7 @@ export class Formatter {
 	 * Prepends `http://` when no recognized scheme is present.
 	 */
 	public asUrl(value: unknown, options?: UrlOptions): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const url = String(value)
 		const href = /^(https?|ftps?|mailto):/i.test(url) ? url : `http://${url}`
 		const target = options?.target ?? "_blank"
@@ -259,7 +271,7 @@ export class Formatter {
 	 * Supports width, height, CSS class, and loading strategy attributes.
 	 */
 	public asImage(value: unknown, options?: ImageOptions): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const src = String(value)
 		const alt = options?.alt ?? ""
 
@@ -279,7 +291,7 @@ export class Formatter {
 
 	/** Formats the value as a boolean using the configured booleanFormat labels. */
 	public asBoolean(value: unknown): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isNullish(value)) return this.nullDisplay
 		return value ? this.booleanFormat[1] : this.booleanFormat[0]
 	}
 
@@ -287,7 +299,7 @@ export class Formatter {
 
 	/** Formats the value as an integer by removing decimal digits without rounding. */
 	public asInteger(value: unknown): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const num = normalizeNumber(value)
 		const intVal = Math.trunc(num)
 
@@ -306,7 +318,7 @@ export class Formatter {
 
 	/** Formats the value as a decimal number. */
 	public asDecimal(value: unknown, decimals?: number): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const num = normalizeNumber(value)
 		const digits = decimals ?? this.defaultDecimalDigits ?? 2
 
@@ -325,7 +337,7 @@ export class Formatter {
 
 	/** Formats the value as a percent number with "%" sign. */
 	public asPercent(value: unknown, decimals?: number): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const num = normalizeNumber(value)
 		const digits = decimals ?? this.defaultDecimalDigits ?? 0
 
@@ -345,7 +357,7 @@ export class Formatter {
 
 	/** Formats the value as a currency number using ISO 4217 codes. */
 	public asCurrency(value: unknown, currency?: string): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const num = normalizeNumber(value)
 		const code = currency ?? this.currencyCode
 
@@ -364,7 +376,7 @@ export class Formatter {
 
 	/** Formats the value as a scientific number (e-notation). */
 	public asScientific(value: unknown, decimals?: number): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const num = normalizeNumber(value)
 		const digits = decimals ?? this.defaultDecimalDigits ?? 2
 
@@ -380,7 +392,7 @@ export class Formatter {
 	 * Supports multiple locales via the locales/ registry.
 	 */
 	public asSpellout(value: unknown): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const num = normalizeNumber(value)
 
 		const spellout = getSpellout(this.locale)
@@ -409,7 +421,7 @@ export class Formatter {
 	 * through `Formatter.registerOrdinalSuffixes()`.
 	 */
 	public asOrdinal(value: unknown): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const num = Math.trunc(normalizeNumber(value))
 
 		try {
@@ -459,7 +471,7 @@ export class Formatter {
 		value: unknown,
 		format?: string | Intl.DateTimeFormatOptions,
 	): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const date = normalizeDate(value)
 		const resolved = resolveDateFormat(
 			format ?? this.dateFormat,
@@ -478,7 +490,7 @@ export class Formatter {
 		value: unknown,
 		format?: string | Intl.DateTimeFormatOptions,
 	): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const date = normalizeDate(value)
 		const resolved = resolveDateFormat(
 			format ?? this.timeFormat,
@@ -497,7 +509,7 @@ export class Formatter {
 		value: unknown,
 		format?: string | Intl.DateTimeFormatOptions,
 	): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const date = normalizeDate(value)
 		const resolved = resolveDateFormat(
 			format ?? this.datetimeFormat,
@@ -513,7 +525,7 @@ export class Formatter {
 
 	/** Returns the value as a UNIX timestamp (seconds since epoch). */
 	public asTimestamp(value: unknown): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const date = normalizeDate(value)
 		return String(Math.floor(date.getTime() / 1000))
 	}
@@ -523,7 +535,7 @@ export class Formatter {
 	 * Uses Intl.RelativeTimeFormat (built-in in Node.js / browsers).
 	 */
 	public asRelativeTime(value: unknown, referenceTime?: unknown): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 
 		const date = normalizeDate(value)
 		const ref = referenceTime ? normalizeDate(referenceTime) : new Date()
@@ -547,7 +559,7 @@ export class Formatter {
 	 * Example: 5400 -> "1 hour, 30 minutes"
 	 */
 	public asDuration(value: unknown, implode?: string): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		let seconds = Math.abs(normalizeNumber(value))
 		const separator = implode ?? ", "
 
@@ -613,7 +625,7 @@ export class Formatter {
 	 * e.g. 1500000 -> "1.5 Million" (en) or "1,5 Trieu" (vi).
 	 */
 	public asNumberShort(value: unknown, options?: NumberShortOptions): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const num = normalizeNumber(value)
 		const absNum = Math.abs(num)
 		const decimals = options?.decimals ?? 1
@@ -715,7 +727,7 @@ export class Formatter {
 	 * Instance method with options support.
 	 */
 	public asMaskedValue(value: unknown, options?: MaskOptions): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const str = String(value)
 		return Formatter.getMaskedValue(
 			str,
@@ -755,7 +767,7 @@ export class Formatter {
 		decimals: number | undefined,
 		width: FormatWidth,
 	): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		let bytes = normalizeNumber(value)
 		const digits = decimals ?? this.defaultDecimalDigits ?? 2
 		const base = this.sizeFormatBase
@@ -812,7 +824,7 @@ export class Formatter {
 		width: FormatWidth,
 		decimals?: number,
 	): string {
-		if (value === null || value === undefined) return this.nullDisplay
+		if (isBlank(value)) return this.nullDisplay
 		const num = normalizeNumber(value)
 		const digits = decimals ?? this.defaultDecimalDigits ?? 2
 

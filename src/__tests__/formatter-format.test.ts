@@ -34,13 +34,33 @@ describe("Formatter - format() tổng quát", () => {
 		})
 	})
 
-	describe("null/undefined", () => {
+	describe("null/undefined/empty string", () => {
 		it("null trả về nullDisplay", () => {
 			expect(f.format(null, "text")).toBe("(not set)")
 		})
 
 		it("undefined trả về nullDisplay", () => {
 			expect(f.format(undefined, "integer")).toBe("(not set)")
+		})
+
+		it("empty string returns nullDisplay for date/number methods", () => {
+			expect(f.format("", "date")).toBe("(not set)")
+			expect(f.format("", "integer")).toBe("(not set)")
+			expect(f.format("", "currency")).toBe("(not set)")
+		})
+
+		it("empty string returns empty for string methods", () => {
+			expect(f.format("", "text")).toBe("")
+			expect(f.format("", "raw")).toBe("")
+		})
+
+		it("empty string returns falsy label for asBoolean", () => {
+			expect(f.format("", "boolean")).toBe("No")
+		})
+
+		it("whitespace-only string returns nullDisplay for date/number methods", () => {
+			expect(f.format("  ", "date")).toBe("(not set)")
+			expect(f.format("  ", "currency")).toBe("(not set)")
 		})
 	})
 

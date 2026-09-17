@@ -24,6 +24,14 @@ describe("Formatter - Số & Tiền tệ", () => {
 		it("null trả về nullDisplay", () => {
 			expect(f.asInteger(null)).toBe("(not set)")
 		})
+
+		it("empty string returns nullDisplay", () => {
+			expect(f.asInteger("")).toBe("(not set)")
+		})
+
+		it("whitespace-only string returns nullDisplay", () => {
+			expect(f.asInteger("  ")).toBe("(not set)")
+		})
 	})
 
 	describe("asDecimal", () => {
