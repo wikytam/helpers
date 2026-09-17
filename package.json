@@ -1,0 +1,55 @@
+{
+	"name": "@wikytam/helpers",
+	"version": "1.0.0",
+	"description": "TypeScript utility library ported from yii\\i18n\\Formatter - zero dependencies, built-in Intl APIs only",
+	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.mjs",
+	"types": "./dist/index.d.mts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.mts",
+			"import": "./dist/index.mjs",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"files": [
+		"dist",
+		"README.md",
+		"README_vi.md"
+	],
+	"scripts": {
+		"build": "tsdown",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"test:cov": "vitest run --coverage",
+		"type-check": "tsc --noEmit",
+		"prepublishOnly": "tsdown"
+	},
+	"keywords": [
+		"formatter",
+		"intl",
+		"i18n",
+		"yii2",
+		"currency",
+		"date",
+		"number",
+		"spellout",
+		"typescript",
+		"helpers"
+	],
+	"author": "wikytam",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/wikytam/helpers.git"
+	},
+	"bugs": {
+		"url": "https://github.com/wikytam/helpers/issues"
+	},
+	"homepage": "https://github.com/wikytam/helpers#readme",
+	"devDependencies": {
+		"tsdown": "^0.23.0",
+		"vitest": "^4.1.11"
+	}
+}
