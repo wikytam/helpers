@@ -38,7 +38,7 @@ export function configureFormatter(options: FormatterOptions): void {
 /**
  * Format a date value safely for display using the global formatter.
  * Returns `fallback` (default: "\u2014") for null, undefined, empty, or invalid dates.
- * Handles timezone-naive ISO strings by treating them as UTC.
+ * Uses the global formatter's `defaultTimeZone` to reinterpret Z-suffix strings.
  */
 export function formatDate(
 	date: string | Date | null | undefined,
@@ -46,7 +46,7 @@ export function formatDate(
 ): string {
 	if (!date) return fallback
 	try {
-		const d = parseDate(date)
+		const d = parseDate(date, instance.defaultTimeZone)
 		if (Number.isNaN(d.getTime())) return fallback
 		return formatter.asDate(d)
 	} catch {

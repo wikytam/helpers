@@ -5,7 +5,7 @@ import {
 	formatPercent,
 	formatter,
 } from "../global.js"
-import { parseDate } from "../utils.js"
+import { getIANAOffset, parseDate } from "../utils.js"
 
 describe("Global formatter singleton", () => {
 	it("works with default config out of the box", () => {
@@ -85,6 +85,68 @@ describe("parseDate()", () => {
 		const result = parseDate("2024-03-15")
 		expect(result.getFullYear()).toBe(2024)
 	})
+
+	it("reinterprets Z-suffix as Asia/Ho_Chi_Minh when defaultTimeZone is set", () => {
+		// "14:30:45Z" reinterpreted as +07:00 -> 14:30:45+07:00 = 07:30:45 UTC
+		const result = parseDate("2024-03-15T14:30:45.000Z", "Asia/Ho_Chi_Minh")
+		expect(result.toISOString()).toBe("2024-03-15T07:30:45.000Z")
+	})
+
+	it("does not reinterpret when defaultTimeZone is UTC", () => {
+		const result = parseDate("2024-03-15T14:30:45.000Z", "UTC")
+		expect(result.toISOString()).toBe("2024-03-15T14:30:45.000Z")
+	})
+
+	it("does not reinterpret non-Z strings even with defaultTimeZone", () => {
+		const result = parseDate("2024-03-15T14:30:45+07:00", "Asia/Ho_Chi_Minh")
+		expect(result.toISOString()).toBe("2024-03-15T07:30:45.000Z")
+	})
+
+	it("reinterprets with Asia/Tokyo (UTC+9)", () => {
+		// "14:30:45Z" reinterpreted as +09:00 -> 14:30:45+09:00 = 05:30:45 UTC
+		const result = parseDate("2024-03-15T14:30:45.000Z", "Asia/Tokyo")
+		expect(result.toISOString()).toBe("2024-03-15T05:30:45.000Z")
+	})
+
+	it("still appends Z for timezone-naive strings even with defaultTimeZone", () => {
+		// No Z suffix and no offset -> treated as UTC regardless
+		const result = parseDate("2024-03-15T14:30:45", "Asia/Ho_Chi_Minh")
+		expect(result.toISOString()).toBe("2024-03-15T14:30:45.000Z")
+	})
+})
+
+// ─── getIANAOffset() ──────────────────────────────────────────────
+
+describe("getIANAOffset()", () => {
+	const refDate = new Date("2024-06-15T12:00:00Z")
+
+	it("returns +07:00 for Asia/Ho_Chi_Minh", () => {
+		expect(getIANAOffset("Asia/Ho_Chi_Minh", refDate)).toBe("+07:00")
+	})
+
+	it("returns +09:00 for Asia/Tokyo", () => {
+		expect(getIANAOffset("Asia/Tokyo", refDate)).toBe("+09:00")
+	})
+
+	it("returns +00:00 for UTC", () => {
+		expect(getIANAOffset("UTC", refDate)).toBe("+00:00")
+	})
+
+	it("returns correct offset for negative timezone", () => {
+		// America/New_York is -04:00 in summer (EDT)
+		const summerDate = new Date("2024-06-15T12:00:00Z")
+		expect(getIANAOffset("America/New_York", summerDate)).toBe("-04:00")
+	})
+
+	it("handles DST transitions", () => {
+		// America/New_York: EST = -05:00 in winter
+		const winterDate = new Date("2024-01-15T12:00:00Z")
+		expect(getIANAOffset("America/New_York", winterDate)).toBe("-05:00")
+	})
+
+	it("handles half-hour offset (Asia/Kolkata = +05:30)", () => {
+		expect(getIANAOffset("Asia/Kolkata", refDate)).toBe("+05:30")
+	})
 })
 
 // ─── formatDate() ─────────────────────────────────────────────────
@@ -127,6 +189,18 @@ describe("formatDate()", () => {
 		configureFormatter({ locale: "en-US", timeZone: "UTC" })
 		const result = formatDate(new Date("2024-03-15T14:30:00Z"))
 		expect(result).toContain("2024")
+	})
+
+	it("uses global formatter defaultTimeZone to reinterpret Z-suffix", () => {
+		configureFormatter({
+			locale: "en-US",
+			timeZone: "Asia/Ho_Chi_Minh",
+			defaultTimeZone: "Asia/Ho_Chi_Minh",
+		})
+		// "23:30Z" reinterpreted as VN time -> still March 15
+		const result = formatDate("2024-03-15T23:30:00.000Z")
+		expect(result).toContain("Mar")
+		expect(result).toContain("15")
 	})
 })
 

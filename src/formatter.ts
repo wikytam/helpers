@@ -472,7 +472,7 @@ export class Formatter {
 		format?: string | Intl.DateTimeFormatOptions,
 	): string {
 		if (isBlank(value)) return this.nullDisplay
-		const date = normalizeDate(value)
+		const date = normalizeDate(value, this.defaultTimeZone)
 		const resolved = resolveDateFormat(
 			format ?? this.dateFormat,
 			"medium",
@@ -491,7 +491,7 @@ export class Formatter {
 		format?: string | Intl.DateTimeFormatOptions,
 	): string {
 		if (isBlank(value)) return this.nullDisplay
-		const date = normalizeDate(value)
+		const date = normalizeDate(value, this.defaultTimeZone)
 		const resolved = resolveDateFormat(
 			format ?? this.timeFormat,
 			"medium",
@@ -510,7 +510,7 @@ export class Formatter {
 		format?: string | Intl.DateTimeFormatOptions,
 	): string {
 		if (isBlank(value)) return this.nullDisplay
-		const date = normalizeDate(value)
+		const date = normalizeDate(value, this.defaultTimeZone)
 		const resolved = resolveDateFormat(
 			format ?? this.datetimeFormat,
 			"medium",
@@ -526,7 +526,7 @@ export class Formatter {
 	/** Returns the value as a UNIX timestamp (seconds since epoch). */
 	public asTimestamp(value: unknown): string {
 		if (isBlank(value)) return this.nullDisplay
-		const date = normalizeDate(value)
+		const date = normalizeDate(value, this.defaultTimeZone)
 		return String(Math.floor(date.getTime() / 1000))
 	}
 
@@ -537,8 +537,8 @@ export class Formatter {
 	public asRelativeTime(value: unknown, referenceTime?: unknown): string {
 		if (isBlank(value)) return this.nullDisplay
 
-		const date = normalizeDate(value)
-		const ref = referenceTime ? normalizeDate(referenceTime) : new Date()
+		const date = normalizeDate(value, this.defaultTimeZone)
+		const ref = referenceTime ? normalizeDate(referenceTime, this.defaultTimeZone) : new Date()
 		const diffMs = date.getTime() - ref.getTime()
 		const diffSec = Math.round(diffMs / 1000)
 
