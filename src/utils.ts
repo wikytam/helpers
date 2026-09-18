@@ -14,10 +14,46 @@ export function escapeHtml(value: string): string {
 }
 
 /**
+ * Parse a "GMT+7" / "GMT-5:30" / "GMT" style string from Intl into a
+ * standard offset like "+07:00" / "-05:30" / "+00:00".
+ */
+function parseGMTOffset(gmtStr: string): string {
+	// "GMT" alone means +00:00
+	if (gmtStr === "GMT" || gmtStr === "UTC") return "+00:00"
+
+	const match = gmtStr.match(/GMT([+-])(\d{1,2})(?::(\d{2}))?/)
+	if (!match) return "+00:00"
+
+	const sign = match[1]
+	const hours = (match[2] ?? "0").padStart(2, "0")
+	const minutes = (match[3] ?? "0").padStart(2, "0")
+	return `${sign}${hours}:${minutes}`
+}
+
+/**
+ * Get the UTC offset string (e.g. "+07:00") for an IANA timezone name
+ * at the given reference date, using only built-in Intl APIs.
+ */
+export function getIANAOffset(iana: string, refDate: Date): string {
+	const fmt = new Intl.DateTimeFormat("en-US", {
+		timeZone: iana,
+		timeZoneName: "shortOffset",
+	})
+	const parts = fmt.formatToParts(refDate)
+	const tzPart = parts.find((p) => p.type === "timeZoneName")
+	return parseGMTOffset(tzPart?.value ?? "GMT")
+}
+
+/**
  * Normalize an input value into a Date object.
  * Accepts: Date, number (UNIX seconds or milliseconds), string (ISO 8601).
+ *
+ * When `defaultTimeZone` is provided and differs from "UTC", ISO strings
+ * ending with "Z" are reinterpreted as being in that timezone instead of UTC.
+ * This handles the common case where backends (Drizzle, Prisma, etc.) append
+ * "Z" to timestamps that are actually stored in local time.
  */
-export function normalizeDate(value: unknown): Date {
+export function normalizeDate(value: unknown, defaultTimeZone?: string): Date {
 	if (value instanceof Date) return value
 
 	if (typeof value === "number") {
@@ -26,7 +62,19 @@ export function normalizeDate(value: unknown): Date {
 	}
 
 	if (typeof value === "string") {
-		const parsed = new Date(value)
+		let str = value
+		// Reinterpret Z-suffix strings when defaultTimeZone is not UTC
+		if (
+			defaultTimeZone &&
+			defaultTimeZone !== "UTC" &&
+			str.includes("T") &&
+			str.endsWith("Z")
+		) {
+			const offset = getIANAOffset(defaultTimeZone, new Date(str))
+			str = str.slice(0, -1) + offset
+		}
+
+		const parsed = new Date(str)
 		if (Number.isNaN(parsed.getTime())) {
 			throw new Error(`Cannot parse date value: "${value}"`)
 		}
@@ -37,21 +85,37 @@ export function normalizeDate(value: unknown): Date {
 }
 
 /**
- * Parse a date string safely, treating timezone-naive ISO strings as UTC.
- * Strings like "2024-03-15T14:30:00" (no Z, no +offset) get "Z" appended
- * to ensure consistent UTC interpretation across environments.
- * Returns an Invalid Date (NaN) for null, undefined, or empty values
- * instead of throwing - suitable for display pipelines.
+ * Parse a date string safely for display, with optional timezone reinterpretation.
+ *
+ * - Strings like "2024-03-15T14:30:00" (no Z, no +offset) get "Z" appended
+ *   to ensure consistent UTC interpretation across environments.
+ * - When `defaultTimeZone` is set and differs from "UTC", Z-suffix strings
+ *   are reinterpreted as being in that timezone (same logic as normalizeDate).
+ * - Returns an Invalid Date (NaN) for null, undefined, or empty values
+ *   instead of throwing - suitable for display pipelines.
  */
 export function parseDate(
 	date: string | Date | null | undefined,
+	defaultTimeZone?: string,
 ): Date {
 	if (!date) return new Date(Number.NaN)
 	if (date instanceof Date) return date
 	let str = date
-	if (typeof str === "string" && !str.endsWith("Z") && !str.includes("+") && str.includes("T")) {
+
+	// Reinterpret Z-suffix strings when defaultTimeZone is not UTC
+	if (
+		defaultTimeZone &&
+		defaultTimeZone !== "UTC" &&
+		str.includes("T") &&
+		str.endsWith("Z")
+	) {
+		const offset = getIANAOffset(defaultTimeZone, new Date(str))
+		str = str.slice(0, -1) + offset
+	} else if (!str.endsWith("Z") && !str.includes("+") && str.includes("T")) {
+		// Timezone-naive ISO string: treat as UTC
 		str += "Z"
 	}
+
 	return new Date(str)
 }
 

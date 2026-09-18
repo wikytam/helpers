@@ -30,4 +30,10 @@ export type {
 	UnitType,
 	UrlOptions,
 } from "./types.js"
-export { escapeHtml, normalizeDate, normalizeNumber, parseDate } from "./utils.js"
+export {
+	escapeHtml,
+	getIANAOffset,
+	normalizeDate,
+	normalizeNumber,
+	parseDate,
+} from "./utils.js"
