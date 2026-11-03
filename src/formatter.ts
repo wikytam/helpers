@@ -1,5 +1,6 @@
 import { getNumberShortConfig, getSpellout } from "./locales/index.js"
 import type {
+	CurrencyShortOptions,
 	EmailOptions,
 	FormatterOptions,
 	FormatWidth,
@@ -650,6 +651,40 @@ export class Formatter {
 			default:
 				return this.asCurrency(num)
 		}
+	}
+
+	/**
+	 * Abbreviate a large currency value with locale-aware suffixes and currency symbol.
+	 * e.g. 1500000 -> "1,50 Triệu ₫" (vi-VN/VND) or "$1.50 Million" (en-US/USD).
+	 *
+	 * Uses `asNumberShort()` for the abbreviated number, then appends the
+	 * currency symbol resolved from `Intl.NumberFormat`.
+	 */
+	public asCurrencyShort(
+		value: unknown,
+		options?: CurrencyShortOptions,
+	): string {
+		if (isBlank(value)) return this.nullDisplay
+		const num = normalizeNumber(value)
+		const decimals = options?.decimals ?? 2
+		const code = options?.currency ?? this.currencyCode
+
+		// Lấy ký hiệu tiền tệ từ Intl
+		const parts = new Intl.NumberFormat(this.locale, {
+			style: "currency",
+			currency: code,
+			currencyDisplay: "narrowSymbol",
+		}).formatToParts(0)
+		const symbol =
+			parts.find((p) => p.type === "currency")?.value ?? code
+
+		const shortNumber = this.asNumberShort(num, {
+			decimals,
+			fallback: "decimal",
+			spaceBefore: options?.spaceBefore,
+		})
+
+		return `${shortNumber} ${symbol}`
 	}
 
 	/**

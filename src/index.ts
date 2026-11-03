@@ -13,6 +13,7 @@ export {
 	registerSpellout,
 } from "./locales/index.js"
 export type {
+	CurrencyShortOptions,
 	DateFormatPreset,
 	EmailOptions,
 	FormatterOptions,

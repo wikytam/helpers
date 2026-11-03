@@ -143,6 +143,16 @@ export interface NumberShortOptions {
 	spaceBefore?: boolean
 }
 
+/** Options for asCurrencyShort() */
+export interface CurrencyShortOptions {
+	/** Number of decimal places (default: 2) */
+	decimals?: number
+	/** ISO 4217 currency code override (default: use instance currencyCode) */
+	currency?: string
+	/** Whether to add a space between number and suffix (default: false for backward compat) */
+	spaceBefore?: boolean
+}
+
 /** Options for asGpsDistance() */
 export interface GpsDistanceOptions {
 	/** Output unit: "m" (meters), "km" (kilometers), "mi" (miles), "auto" (default: "auto") */

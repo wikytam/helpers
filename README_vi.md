@@ -87,6 +87,7 @@ formatter.asDate("2024-03-15")       // "15 thg 3, 2024"
 formatter.asBoolean(true)            // "Có"
 formatter.asSpellout(42)             // "bốn mươi hai"
 formatter.asNumberShort(5000000)     // "5,0 Triệu"
+formatter.asCurrencyShort(5000000)   // "5,00 Triệu ₫"
 ```
 
 ```typescript
@@ -348,6 +349,7 @@ f1000.asShortSize(1500)   // "1.5 KB"
 | Phương thức          | Mô tả                                                                                  | Chữ ký                                         |
 | -------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | `asNumberShort()`    | Viết tắt số lớn kèm hậu tố theo ngôn ngữ (ví dụ: "1,5 Triệu", "2,3 Tỷ").            | `asNumberShort(value, options?)`               |
+| `asCurrencyShort()`  | Viết tắt tiền tệ lớn kèm hậu tố + ký hiệu tiền (ví dụ: "5,00 Triệu ₫").             | `asCurrencyShort(value, options?)`             |
 | `asGpsDistance()`    | Khoảng cách GPS được định dạng kèm đơn vị (km, m, mi).                                 | `asGpsDistance(lat1, lon1, lat2, lon2, options?)`|
 | `asMaskedValue()`    | Che giấu chuỗi, chỉ hiển thị N ký tự đầu và cuối.                                     | `asMaskedValue(value, options?)`               |
 
@@ -362,6 +364,13 @@ f.asNumberShort(1_234_567, { decimals: 2 })          // "1.23 Million"
 const fVi = new Formatter({ locale: "vi-VN", currencyCode: "VND" })
 fVi.asNumberShort(5_000_000)                         // "5,0 Triệu"
 fVi.asNumberShort(1_500_000_000_000)                 // "1,5 Nghìn Tỷ"
+
+// Viết tắt tiền tệ lớn (số rút gọn + ký hiệu tiền tệ)
+f.asCurrencyShort(1_500_000)                         // "1.50 Million $"
+f.asCurrencyShort(500)                               // "500.00 $"
+fVi.asCurrencyShort(5_000_000)                       // "5,00 Triệu ₫"
+fVi.asCurrencyShort(1_500_000_000)                   // "1,50 Tỷ ₫"
+f.asCurrencyShort(1_000_000, { currency: "EUR" })    // "1.00 Million €"
 
 // Khoảng cách GPS (có đơn vị)
 f.asGpsDistance(40.7128, -74.006, 34.0522, -118.2437)                 // "3,944.4 km" (tự động)
@@ -514,6 +523,7 @@ const sp = getSpellout("ja")
 | Định dạng ngày        | ICU patterns        | Intl presets hoặc `Intl.DateTimeFormatOptions`    |
 | Cấu hình              | Mảng PHP            | Interface TypeScript `FormatterOptions`            |
 | `asNumberShort()`     | Helper Yii2 tùy chỉnh | Instance method + options (fallback, spaceBefore)|
+| `asCurrencyShort()`   | Không có              | Số rút gọn + ký hiệu tiền tệ theo locale        |
 | `asGpsDistance()`     | Helper Yii2 tùy chỉnh | Instance method + đơn vị/decimals options       |
 | `asMaskedValue()`     | Helper Yii2 tùy chỉnh | Instance method + null handling + options       |
 | Đầu vào ngày          | Chỉ Date/string      | Tự nhận diện UNIX timestamp (giây hoặc mili giây)|
