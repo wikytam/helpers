@@ -61,7 +61,7 @@ configureFormatter({
   timeZone: "Asia/Ho_Chi_Minh",
   currencyCode: "VND",
   booleanFormat: ["Không", "Có"],           // Vietnamese: [false, true] labels
-  nullDisplay: "(chua dat)",                // Vietnamese: shown for null/undefined
+  nullDisplay: "(chưa đặt)",                // Vietnamese: shown for null/undefined
   decimalSeparator: ",",
   thousandSeparator: ".",
 })
@@ -74,11 +74,12 @@ configureFormatter({
 // No need to pass instances, no need to create wrapper files
 import { formatter } from "@wikytam/helpers"
 
-formatter.asCurrency(1234567)        // "1.234.567 d"
+formatter.asCurrency(1234567)        // "1.234.567 ₫"
 formatter.asDate("2024-03-15")       // "15 thg 3, 2024"
 formatter.asBoolean(true)            // "Có"
 formatter.asSpellout(42)             // "bốn mươi hai"
-formatter.asNumberShort(5000000)     // "5,0 Trieu"
+formatter.asNumberShort(5000000)     // "5,0 Triệu"
+formatter.asCurrencyShort(5000000)   // "5,00 Triệu ₫"
 ```
 
 ```typescript
@@ -379,6 +380,7 @@ f1000.asShortSize(1500)   // "1.5 KB"
 | Method               | Description                                       | Signature                                          |
 | -------------------- | ------------------------------------------------- | -------------------------------------------------- |
 | `asNumberShort()`    | Abbreviates large numbers with locale suffixes.   | `asNumberShort(value, options?)`                   |
+| `asCurrencyShort()` | Abbreviates large currency with symbol.           | `asCurrencyShort(value, options?)`                 |
 | `asGpsDistance()`    | Formatted distance between GPS coordinates.       | `asGpsDistance(lat1, lon1, lat2, lon2, options?)`  |
 | `asMaskedValue()`   | Masks a string, showing first/last N characters.  | `asMaskedValue(value, options?)`                   |
 
@@ -393,8 +395,15 @@ f.asNumberShort(500, { fallback: "integer" })       // "500"
 f.asNumberShort(1_234_567, { decimals: 2 })         // "1.23 Million"
 
 const fVi = new Formatter({ locale: "vi-VN", currencyCode: "VND" })
-fVi.asNumberShort(5_000_000)                        // "5,0 Trieu"
-fVi.asNumberShort(1_500_000_000_000)                // "1,5 Nghin Ty"
+fVi.asNumberShort(5_000_000)                        // "5,0 Triệu"
+fVi.asNumberShort(1_500_000_000_000)                // "1,5 Nghìn Tỷ"
+
+// Abbreviate large currency values (number + currency symbol)
+f.asCurrencyShort(1_500_000)                        // "1.50 Million $"
+f.asCurrencyShort(500)                              // "500.00 $"
+fVi.asCurrencyShort(5_000_000)                      // "5,00 Triệu ₫"
+fVi.asCurrencyShort(1_500_000_000)                  // "1,50 Tỷ ₫"
+f.asCurrencyShort(1_000_000, { currency: "EUR" })   // "1.00 Million €"
 
 // GPS distance (formatted with units)
 f.asGpsDistance(40.7128, -74.006, 34.0522, -118.2437)              // "3,944.4 km" (auto)
@@ -415,6 +424,12 @@ f.asMaskedValue(null)                                        // "(not set)"
 interface NumberShortOptions {
   decimals?: number      // Decimal places (default: 1)
   fallback?: "currency" | "decimal" | "integer"  // Below threshold (default: "currency")
+  spaceBefore?: boolean  // Space between number and suffix (default: false)
+}
+
+interface CurrencyShortOptions {
+  decimals?: number      // Decimal places (default: 2)
+  currency?: string      // ISO 4217 override (default: instance currencyCode)
   spaceBefore?: boolean  // Space between number and suffix (default: false)
 }
 
@@ -454,9 +469,9 @@ const fVi = new Formatter({
   locale: "vi-VN",
   timeZone: "Asia/Ho_Chi_Minh",
   currencyCode: "VND",
-  booleanFormat: ["Khong", "Co"],
+  booleanFormat: ["Không", "Có"],
 })
-fVi.asCurrency(1234567)  // "1.234.567 d"
+fVi.asCurrency(1234567)  // "1.234.567 ₫"
 
 // Japanese
 const fJa = new Formatter({
@@ -481,9 +496,9 @@ fEn.asSpellout(1234567)  // "one million two hundred thirty-four thousand five h
 
 // Vietnamese (built-in)
 const fVi = new Formatter({ locale: "vi-VN" })
-fVi.asSpellout(42)       // "bon muoi hai"
-fVi.asSpellout(1500)     // "mot nghin nam tram"
-fVi.asSpellout(1000000)  // "mot trieu"
+fVi.asSpellout(42)       // "bốn mươi hai"
+fVi.asSpellout(1500)     // "một nghìn năm trăm"
+fVi.asSpellout(1000000)  // "một triệu"
 ```
 
 
@@ -569,6 +584,7 @@ const sp = getSpellout("ja")
 | Date formats          | ICU patterns        | Intl presets or `Intl.DateTimeFormatOptions`    |
 | Config                | PHP array           | TypeScript `FormatterOptions` interface         |
 | `asNumberShort()`     | Custom Yii2 helper  | Instance method + options (fallback, spaceBefore)|
+| `asCurrencyShort()`   | N/A                 | Abbreviated currency with symbol + locale suffix |
 | `asGpsDistance()`     | Custom Yii2 helper  | Instance method + unit/decimals options          |
 | `asMaskedValue()`     | Custom Yii2 helper  | Instance method + null handling + options        |
 | Date inputs           | Only Date/string    | Auto-detects UNIX timestamps (s or ms)           |

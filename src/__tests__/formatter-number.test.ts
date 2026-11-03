@@ -184,4 +184,55 @@ describe("Formatter - Số & Tiền tệ", () => {
 			expect(fCustom.asDecimal(1.5)).toBe("1.5000")
 		})
 	})
+
+	describe("asCurrencyShort", () => {
+		it("format số lớn kèm ký hiệu tiền tệ (USD)", () => {
+			const result = f.asCurrencyShort(1_500_000)
+			expect(result).toContain("Million")
+			expect(result).toContain("$")
+		})
+
+		it("format số lớn kèm ký hiệu tiền tệ (VND)", () => {
+			const fVi = new Formatter({ locale: "vi-VN", currencyCode: "VND" })
+			const result = fVi.asCurrencyShort(5_000_000)
+			expect(result).toContain("Triệu")
+			expect(result).toContain("₫")
+		})
+
+		it("format số tỷ VND", () => {
+			const fVi = new Formatter({ locale: "vi-VN", currencyCode: "VND" })
+			const result = fVi.asCurrencyShort(1_500_000_000)
+			expect(result).toContain("Tỷ")
+			expect(result).toContain("₫")
+		})
+
+		it("format số nhỏ (dưới threshold) dùng decimal fallback kèm ký hiệu", () => {
+			const result = f.asCurrencyShort(500)
+			expect(result).toContain("$")
+			expect(result).toContain("500")
+		})
+
+		it("null trả về nullDisplay", () => {
+			expect(f.asCurrencyShort(null)).toBe("(not set)")
+		})
+
+		it("hỗ trợ override currency code qua options", () => {
+			const result = f.asCurrencyShort(1_000_000, { currency: "EUR" })
+			expect(result).toContain("Million")
+			expect(result).toContain("€")
+		})
+
+		it("hỗ trợ custom decimals", () => {
+			const fVi = new Formatter({ locale: "vi-VN", currencyCode: "VND" })
+			const result = fVi.asCurrencyShort(1_234_567, { decimals: 1 })
+			expect(result).toContain("Triệu")
+			expect(result).toContain("₫")
+		})
+
+		it("giá trị zero trả về '0' kèm ký hiệu", () => {
+			const result = f.asCurrencyShort(0)
+			expect(result).toContain("$")
+			expect(result).toContain("0")
+		})
+	})
 })
