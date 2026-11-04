@@ -1,5 +1,9 @@
 import { Formatter } from "./formatter.js"
-import type { FormatterOptions } from "./types.js"
+import type {
+	CurrencyShortOptions,
+	FormatterOptions,
+	NumberShortOptions,
+} from "./types.js"
 import { parseDate } from "./utils.js"
 
 /**
@@ -75,4 +79,65 @@ export function formatPercent(
 	}
 	const pct = value > 0 && value <= 1 ? value * 100 : value
 	return `${formatter.asDecimal(pct, 2)}%`
+}
+
+/**
+ * Abbreviate a large number with locale-aware suffixes (e.g. 1500000 -> "1.5M" / "1,5 Triệu").
+ * Standalone convenience wrapper around the global formatter instance.
+ */
+export function asNumberShort(
+	value: unknown,
+	options?: NumberShortOptions,
+): string {
+	return formatter.asNumberShort(value, options)
+}
+
+/**
+ * Abbreviate a large currency value with locale-aware suffixes and currency symbol (e.g. 1500000 -> "1,50 Triệu ₫").
+ * Standalone convenience wrapper around the global formatter instance.
+ */
+export function asCurrencyShort(
+	value: unknown,
+	options?: CurrencyShortOptions,
+): string {
+	return formatter.asCurrencyShort(value, options)
+}
+
+/**
+ * Format a currency value using the global formatter (e.g. 1234.56 -> "$1,234.56" / "1.234,56 ₫").
+ * Standalone convenience wrapper around the global formatter instance.
+ */
+export function asCurrency(value: unknown, currency?: string): string {
+	return formatter.asCurrency(value, currency)
+}
+
+/**
+ * Alias for `asCurrency()`.
+ */
+export function formatCurrency(value: unknown, currency?: string): string {
+	return formatter.asCurrency(value, currency)
+}
+
+/**
+ * Alias for `asCurrencyShort()`, providing backward compatibility for projects previously using `formatCurrencyCompact`.
+ */
+export function formatCurrencyCompact(
+	value: unknown,
+	options?: CurrencyShortOptions,
+): string {
+	return formatter.asCurrencyShort(value, options)
+}
+
+/**
+ * Format an integer with grouping separators using the global formatter.
+ */
+export function asInteger(value: unknown): string {
+	return formatter.asInteger(value)
+}
+
+/**
+ * Format a decimal number with locale-aware separators and fixed decimal places using the global formatter.
+ */
+export function asDecimal(value: unknown, decimals?: number): string {
+	return formatter.asDecimal(value, decimals)
 }

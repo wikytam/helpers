@@ -339,6 +339,37 @@ export declare function formatDate(date: string | Date | null | undefined, fallb
  */
 export declare function formatPercent(value: number | string | null | undefined, fallback?: string): string;
 /**
+ * Abbreviate a large number with locale-aware suffixes (e.g. 1500000 -> "1.5M" / "1,5 Triệu").
+ * Standalone convenience wrapper around the global formatter instance.
+ */
+export declare function asNumberShort(value: unknown, options?: NumberShortOptions): string;
+/**
+ * Abbreviate a large currency value with locale-aware suffixes and currency symbol (e.g. 1500000 -> "1,50 Triệu ₫").
+ * Standalone convenience wrapper around the global formatter instance.
+ */
+export declare function asCurrencyShort(value: unknown, options?: CurrencyShortOptions): string;
+/**
+ * Format a currency value using the global formatter (e.g. 1234.56 -> "$1,234.56" / "1.234,56 ₫").
+ * Standalone convenience wrapper around the global formatter instance.
+ */
+export declare function asCurrency(value: unknown, currency?: string): string;
+/**
+ * Alias for `asCurrency()`.
+ */
+export declare function formatCurrency(value: unknown, currency?: string): string;
+/**
+ * Alias for `asCurrencyShort()`, providing backward compatibility for projects previously using `formatCurrencyCompact`.
+ */
+export declare function formatCurrencyCompact(value: unknown, options?: CurrencyShortOptions): string;
+/**
+ * Format an integer with grouping separators using the global formatter.
+ */
+export declare function asInteger(value: unknown): string;
+/**
+ * Format a decimal number with locale-aware separators and fixed decimal places using the global formatter.
+ */
+export declare function asDecimal(value: unknown, decimals?: number): string;
+/**
  * Interface for locale-specific spellout and number-short providers.
  * Implement this to add a new language for asSpellout() and formatNumberShort().
  */

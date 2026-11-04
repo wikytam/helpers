@@ -1244,9 +1244,61 @@ function formatPercent(value, fallback = "—") {
 	const pct = value > 0 && value <= 1 ? value * 100 : value;
 	return `${formatter.asDecimal(pct, 2)}%`;
 }
+/**
+* Abbreviate a large number with locale-aware suffixes (e.g. 1500000 -> "1.5M" / "1,5 Triệu").
+* Standalone convenience wrapper around the global formatter instance.
+*/
+function asNumberShort(value, options) {
+	return formatter.asNumberShort(value, options);
+}
+/**
+* Abbreviate a large currency value with locale-aware suffixes and currency symbol (e.g. 1500000 -> "1,50 Triệu ₫").
+* Standalone convenience wrapper around the global formatter instance.
+*/
+function asCurrencyShort(value, options) {
+	return formatter.asCurrencyShort(value, options);
+}
+/**
+* Format a currency value using the global formatter (e.g. 1234.56 -> "$1,234.56" / "1.234,56 ₫").
+* Standalone convenience wrapper around the global formatter instance.
+*/
+function asCurrency(value, currency) {
+	return formatter.asCurrency(value, currency);
+}
+/**
+* Alias for `asCurrency()`.
+*/
+function formatCurrency(value, currency) {
+	return formatter.asCurrency(value, currency);
+}
+/**
+* Alias for `asCurrencyShort()`, providing backward compatibility for projects previously using `formatCurrencyCompact`.
+*/
+function formatCurrencyCompact(value, options) {
+	return formatter.asCurrencyShort(value, options);
+}
+/**
+* Format an integer with grouping separators using the global formatter.
+*/
+function asInteger(value) {
+	return formatter.asInteger(value);
+}
+/**
+* Format a decimal number with locale-aware separators and fixed decimal places using the global formatter.
+*/
+function asDecimal(value, decimals) {
+	return formatter.asDecimal(value, decimals);
+}
 exports.Formatter = Formatter;
+exports.asCurrency = asCurrency;
+exports.asCurrencyShort = asCurrencyShort;
+exports.asDecimal = asDecimal;
+exports.asInteger = asInteger;
+exports.asNumberShort = asNumberShort;
 exports.configureFormatter = configureFormatter;
 exports.escapeHtml = escapeHtml;
+exports.formatCurrency = formatCurrency;
+exports.formatCurrencyCompact = formatCurrencyCompact;
 exports.formatDate = formatDate;
 exports.formatPercent = formatPercent;
 exports.formatter = formatter;
