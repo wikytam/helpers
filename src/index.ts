@@ -1,6 +1,13 @@
 export { Formatter } from "./formatter.js"
 export {
+	asCurrency,
+	asCurrencyShort,
+	asDecimal,
+	asInteger,
+	asNumberShort,
 	configureFormatter,
+	formatCurrency,
+	formatCurrencyCompact,
 	formatDate,
 	formatPercent,
 	formatter,

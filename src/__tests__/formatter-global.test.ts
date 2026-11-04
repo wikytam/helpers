@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest"
 import {
+	asCurrency,
+	asCurrencyShort,
+	asDecimal,
+	asInteger,
+	asNumberShort,
 	configureFormatter,
+	formatCurrency,
+	formatCurrencyCompact,
 	formatDate,
 	formatPercent,
 	formatter,
@@ -258,5 +265,51 @@ describe("formatPercent()", () => {
 
 	it("supports custom fallback", () => {
 		expect(formatPercent(null, "N/A")).toBe("N/A")
+	})
+})
+
+// ─── Standalone helper functions ──────────────────────────────────
+
+describe("Standalone global helper functions (backward compatibility)", () => {
+	it("asNumberShort() delegates to global formatter", () => {
+		configureFormatter({ locale: "vi-VN" })
+		expect(asNumberShort(1_500_000)).toContain("Triệu")
+		expect(asNumberShort(1_000_000_000)).toContain("Tỷ")
+	})
+
+	it("asCurrencyShort() delegates to global formatter", () => {
+		configureFormatter({ locale: "vi-VN", currencyCode: "VND" })
+		const result = asCurrencyShort(5_000_000)
+		expect(result).toContain("Triệu")
+		expect(result).toContain("₫")
+	})
+
+	it("formatCurrencyCompact() works as alias for asCurrencyShort()", () => {
+		configureFormatter({ locale: "vi-VN", currencyCode: "VND" })
+		const res1 = formatCurrencyCompact(5_000_000)
+		const res2 = asCurrencyShort(5_000_000)
+		expect(res1).toBe(res2)
+		expect(res1).toContain("Triệu")
+		expect(res1).toContain("₫")
+	})
+
+	it("asCurrency() and formatCurrency() format currency with global config", () => {
+		configureFormatter({ locale: "en-US", currencyCode: "USD" })
+		expect(asCurrency(1234.56)).toBe("$1,234.56")
+		expect(formatCurrency(1234.56)).toBe("$1,234.56")
+
+		configureFormatter({ locale: "vi-VN", currencyCode: "VND" })
+		expect(asCurrency(1000000)).toBe("1.000.000\u00a0₫")
+		expect(formatCurrency(1000000)).toBe("1.000.000\u00a0₫")
+	})
+
+	it("asInteger() delegates to global formatter", () => {
+		configureFormatter({ locale: "en-US" })
+		expect(asInteger(1234567)).toBe("1,234,567")
+	})
+
+	it("asDecimal() delegates to global formatter", () => {
+		configureFormatter({ locale: "en-US" })
+		expect(asDecimal(1234.5678, 2)).toBe("1,234.57")
 	})
 })
